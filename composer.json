@@ -1,0 +1,17 @@
+{
+    "name": "zenc0dr/sampurna",
+    "description": "सम्पूर्ण",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Zenc0dr\\Sampurna\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Alex Blaze",
+            "email": "zen@8ber.ru"
+        }
+    ],
+    "require": {}
+}
