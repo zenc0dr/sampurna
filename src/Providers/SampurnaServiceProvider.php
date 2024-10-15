@@ -18,11 +18,11 @@ class SampurnaServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__ . '/../Http/routes.php');
 
         // Регистрация консольных команд
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                \Zenc0dr\Sampurna\Commands\YourCommand::class,
-            ]);
-        }
+//        if ($this->app->runningInConsole()) {
+//            $this->commands([
+//                #\Zenc0dr\Sampurna\Commands\YourCommand::class,
+//            ]);
+//        }
 
         // Публикация конфигураций
         $this->publishes([
