@@ -14,5 +14,15 @@
             "email": "zen@8ber.ru"
         }
     ],
-    "require": {}
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Zenc0dr\\Sampurna\\Providers\\SampurnaServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "php": ">=8.0",
+        "illuminate/support": "^8.0|^9.0|^10.0"
+    }
 }
