@@ -7,7 +7,7 @@ use Zenc0dr\Sampurna\Services\SampurnaStackService;
 
 class StackCommand extends Command
 {
-    protected $signature = 'sampurna:stack {action?} {--name=}';
+    protected $signature = 'sampurna:stack {action?} {--uuid=}';
     protected $description = 'Run patch';
     public function handle()
     {
@@ -18,12 +18,12 @@ class StackCommand extends Command
         }
 
         if ($action === 'create') {
-            $name = $this->option('name');
-            if (!$name) {
-                $this->dropError('Name not specified');
+            $uuid = $this->option('uuid');
+            if (!$uuid) {
+                $uuid = uniqid();
             }
             $stack = new SampurnaStackService();
-            $stack->create($name);
+            $stack->create($uuid);
         }
     }
 

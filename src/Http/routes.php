@@ -1,8 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Zenc0dr\Sampurna\Sampurna;
 
-Route::get('/test_sampurna', function () {
-    return Sampurna::test();
+Route::match(['get', 'post'], '/sampurna.api.{class}:{method}', function ($class, $method) {
+    return app("Zenc0dr\Sampurna\Api\\$class")->{$method}();
 });

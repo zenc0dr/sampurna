@@ -7,25 +7,23 @@ use Zenc0dr\Sampurna\Commands\StackCommand;
 
 class SampurnaServiceProvider extends ServiceProvider
 {
-    public function register()
+    public function register(): void
     {
-        // Регистрация конфигураций
         $this->mergeConfigFrom(__DIR__ . '/../config/sampurna.php', 'sampurna');
     }
 
-    public function boot()
+    public function boot(): void
     {
-        // Загрузка маршрутов
+        require __DIR__.'/../helpers.php';
+
         $this->loadRoutesFrom(__DIR__ . '/../Http/routes.php');
 
-        // Регистрация консольных команд
         if ($this->app->runningInConsole()) {
             $this->commands([
                 StackCommand::class,
             ]);
         }
 
-        // Публикация конфигураций
         $this->publishes([
             __DIR__ . '/../config/sampurna.php' => config_path('sampurna.php'),
         ], 'config');

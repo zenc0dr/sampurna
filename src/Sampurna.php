@@ -2,14 +2,15 @@
 
 namespace Zenc0dr\Sampurna;
 
+use Zenc0dr\Sampurna\Classes\SampurnaHelpers;
+use Zenc0dr\Sampurna\Traits\SingletonTrait;
+
 class Sampurna
 {
-    /**
-     * Test function
-     * @return string
-     */
-    public static function test(): string
+    use SingletonTrait;
+
+    public function helpers(): SampurnaHelpers
     {
-        return 'Hallo Sampurna';
+        return SampurnaHelpers::getInstance();
     }
 }
