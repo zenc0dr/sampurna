@@ -3,6 +3,7 @@
 namespace Zenc0dr\Sampurna\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Zenc0dr\Sampurna\Commands\StackCommand;
 
 class SampurnaServiceProvider extends ServiceProvider
 {
@@ -18,11 +19,11 @@ class SampurnaServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__ . '/../Http/routes.php');
 
         // Регистрация консольных команд
-//        if ($this->app->runningInConsole()) {
-//            $this->commands([
-//                #\Zenc0dr\Sampurna\Commands\YourCommand::class,
-//            ]);
-//        }
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                StackCommand::class,
+            ]);
+        }
 
         // Публикация конфигураций
         $this->publishes([
