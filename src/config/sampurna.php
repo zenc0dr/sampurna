@@ -1,4 +1,4 @@
 <?php
 return [
-    'sampurna_temp' => storage_path('sampurna_temp')
+    'sampurna_vault' => storage_path('sampurna_vault')
 ];

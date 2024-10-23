@@ -12,6 +12,7 @@ class StackCommand extends Command
     protected $description = 'Run patch';
     public function handle()
     {
+        sampurna()->services()->sessionStorageSet('sampurna.log.echo', true);
         $action = $this->argument('action');
 
         if (!$action) {
@@ -29,6 +30,7 @@ class StackCommand extends Command
 
         if ($action === 'debug') {
             $ww = new WaterwayParser();
+            //$ww->dispatcher();
             $ww->getCruises();
         }
     }

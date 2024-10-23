@@ -11,7 +11,21 @@ class Debug
     # http://sampurna.azimut.dc/sampurna.api.Debug:test
     public function test()
     {
-        $ww = new WaterwayParser();
-        $ww->getCruises();
+        //sampurna()->services()->sessionStorageSet('test', 'Тут что-то');
+       //$this->test2();
+
+//        $ww = new WaterwayParser();
+//        $ww->getCruises();
+
+        dd('OK?');
+
+
+    }
+
+    public function test2()
+    {
+        dd(
+            sampurna()->services()->sessionStorageGet('test')
+        );
     }
 }

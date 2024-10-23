@@ -15,8 +15,8 @@ class SampurnaStackService
     {
         $this->stack_code = $stack_code;
         $helpers = sampurna()->helpers();
-        $sampurna_temp = config('sampurna.sampurna_temp');
-        $scheme_path = $helpers->checkDir($sampurna_temp . "/$stack_code.json");
+        $sampurna_vault = config('sampurna.sampurna_vault');
+        $scheme_path = $helpers->checkDir($sampurna_vault . "/$stack_code.json");
         file_put_contents(
             $scheme_path,
             file_get_contents(
