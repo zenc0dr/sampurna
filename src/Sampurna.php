@@ -16,9 +16,9 @@ class Sampurna
         return SampurnaHelpers::getInstance();
     }
 
-    public function vault(): SampurnaVault
+    public function vault(string $vault_name): SampurnaVault
     {
-        return SampurnaVault::getInstance();
+        return new SampurnaVault($vault_name);
     }
 
     public function services(): SampurnaServices

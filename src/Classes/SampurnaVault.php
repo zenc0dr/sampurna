@@ -2,43 +2,92 @@
 
 namespace Zenc0dr\Sampurna\Classes;
 
-use Zenc0dr\Sampurna\Traits\SingletonTrait;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Query\Builder;
+use Exception;
+use Closure;
 
 class SampurnaVault
 {
-    use SingletonTrait;
+    private string $vault_name;
+    private string $vault_path;
+    private static array $instances = [];
 
-    private array $vault_data = [];
-
-    public function get(string $key)
+    public static function getInstance(string $vault_name): self
     {
-        if ($value = $this->getter($key)) {
-            return $value;
+        if (isset(self::$instances[$vault_name])) {
+            return self::$instances[$vault_name];
         }
-        return $this->vault_data[$key] ?? null;
+
+        return self::$instances[$vault_name] = new self($vault_name);
     }
 
-    public function set(string $key, mixed $value): void
+    public function __construct(string $vault_name)
     {
-        $this->vault_data[$key] = $value;
+        $this->vault_name = $vault_name;
+        $this->vault_path = config('sampurna.sampurna_temp') . "/vaults/$vault_name";
     }
 
-    private function getter(string $key)
+    public function create(Closure $schema): void
     {
-        return match ($key) {
-            'log.path' => $this->sampurnaLogPathGetter(),
-            default => null
-        };
+        $this->truncate();
+        sampurna()->helpers()->checkDir($this->vault_path);
+        touch($this->vault_path);
+        config(['database.connections.sqlite_' . $this->vault_name => [
+            'driver' => 'sqlite',
+            'database' => $this->vault_path,
+            'prefix' => '',
+        ]]);
+        $schema(Schema::connection("sqlite_$this->vault_name"));
     }
 
-    #### GETTERS
-    private function sampurnaLogPathGetter()
+    public function update(Closure $schema): void
     {
-        if (isset($this->vault_data['log.path'])) {
-            return $this->vault_data['log.path'];
+        if (!file_exists($this->vault_path)) {
+            throw new Exception("{$this->vault_path} does not exist");
         }
-        $log_path = storage_path('logs/sampurna.log');
-        sampurna()->helpers()->checkDir($log_path);
-        return $this->vault_data['log.path'] = $log_path;
+        config(['database.connections.sqlite_' . $this->vault_name => [
+            'driver' => 'sqlite',
+            'database' => $this->vault_path,
+            'prefix' => '',
+        ]]);
+        $schema(Schema::connection("sqlite_$this->vault_name"));
+    }
+
+    public function query(string $table_name, ?int $id = null, string $id_name = 'id'): ?object
+    {
+        config(['database.connections.sqlite_' . $this->vault_name => [
+            'driver' => 'sqlite',
+            'database' => $this->vault_path,
+            'prefix' => '',
+        ]]);
+
+        $db_connection = DB::connection("sqlite_$this->vault_name");
+        $pdo = $db_connection->getPdo();
+
+        # Переопределяем функцию like в sqlite для корректной работы регистронезависимого поиска
+        $pdo->sqliteCreateFunction('like', function ($pattern, $value) {
+            $pattern = str_replace('%', '.*', preg_quote($pattern, '/'));
+            return preg_match('/^' . $pattern . '$/iu', $value) > 0;
+        }, 2);
+
+        if ($id) {
+            if ($id_name === 'id') {
+                return $db_connection->table($table_name)->find($id);
+            } else {
+                return $db_connection->table($table_name)->where($id_name, $id)->first();
+            }
+        }
+
+        return $db_connection->table($table_name);
+    }
+
+    public function truncate(): void
+    {
+        if (file_exists($this->vault_path)) {
+            unlink($this->vault_path);
+        }
     }
 }

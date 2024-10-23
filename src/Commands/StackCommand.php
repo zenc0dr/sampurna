@@ -2,12 +2,13 @@
 
 namespace Zenc0dr\Sampurna\Commands;
 
+use App\Services\Parsers\Waterway\WaterwayParser;
 use Illuminate\Console\Command;
 use Zenc0dr\Sampurna\Services\SampurnaStackService;
 
 class StackCommand extends Command
 {
-    protected $signature = 'sampurna:stack {action?} {--uuid=}';
+    protected $signature = 'sampurna {action?} {--uuid=}';
     protected $description = 'Run patch';
     public function handle()
     {
@@ -24,6 +25,11 @@ class StackCommand extends Command
             }
             $stack = new SampurnaStackService();
             $stack->create($uuid);
+        }
+
+        if ($action === 'debug') {
+            $ww = new WaterwayParser();
+            $ww->getCruises();
         }
     }
 

@@ -14,7 +14,7 @@ class SampurnaServices
         bool $timestamp = true,
         string $log_path = null
     ): void {
-        $log_path = $log_path ?? sampurna()->vault()->get('log.path');
+        $log_path = $log_path ?? storage_path('logs/sampurna.log');
 
         if (is_array($message)) {
             $message = sampurna()->helpers()->toJson($message, true);
