@@ -37,7 +37,7 @@ class SampurnaUnit
     }
 
     # Постановка в очередь
-    public function dispatch(array $batch = [], int $data_key = 0)
+    public function dispatch(?array $batch = null, int $data_key = 0)
     {
         $unit_data = $this->readUnitData($this->unit_uuid);
         $stack_uuid = $unit_data['stack'] ?? null;
@@ -64,7 +64,44 @@ class SampurnaUnit
         }
     }
 
+    # Запуск в фоне
+    public function stream(string $unit_uuid, int $data_key = 0)
+    {
+        $this->artisanBackgroundExec("sampurna:unit run --uuid=$unit_uuid:$data_key");
+    }
 
+    public function streamRun(int $data_key)
+    {
+        $pid = getmypid();
+        $unit_data = $this->readUnitData($this->unit_uuid);
+        $stack_uuid = $unit_data['stack'];
+        $stack_vault = sampurna()->stack($stack_uuid)->vault();
+        $queue_record = $stack_vault->query('queue')
+            ->where('stack_uuid', $stack_uuid)
+            ->where('name', $this->unit_uuid)
+            ->where('key', $data_key)
+            ->first();
+        $stack_vault->query('queue')
+            ->where('id', $queue_record->id)
+            ->update([
+                'pid' => $pid,
+                'start_at' => now(),
+                'status' => 'process'
+            ]);
+        $batch = sampurna()->batch("$stack_uuid.$this->unit_uuid.$data_key");
+        $call_string = $unit_data['call'];
+        $call_string = explode('.', $call_string);
+        $method = array_pop($call_string);
+        $call_string = join('\\', $call_string);
+        app($call_string)->{$method}($batch);
+        $stack_vault->query('queue')
+            ->where('id', $queue_record->id)
+            ->update([
+                'pid' => $pid,
+                'status' => 'completed',
+                'completed_at' => now()
+            ]);
+    }
 
     private function readUnitData(string $unit_uuid): array
     {
@@ -89,8 +126,8 @@ class SampurnaUnit
         $nohup_enable = env('SAMPURNA_NOHUP_ENABLE', false);
 
         $dir = base_path();
-        $output = $this->output;
-        $output_errors = $this->output_errors;
+        $output = '/dev/null';
+        $output_errors = '/dev/null';
         $cli_command = "$php_path $dir/artisan $cli_command >$output 2>$output_errors &";
 
         if ($nohup_enable) {

@@ -13,6 +13,11 @@ class SampurnaStack
         $this->stack_uuid = $stack_uuid;
     }
 
+    public function list()
+    {
+        dd('ookey list');
+    }
+
     private function createStackQueueVault(): void
     {
         $stack_vault_name = "$this->stack_uuid.queue";
@@ -28,8 +33,10 @@ class SampurnaStack
                     $table->mediumText('errors')->nullable();
                     $table->integer('attempts')->default(0);
                     $table->timestamp('created_at');
+                    $table->timestamp('start_at')->nullable();
                     $table->timestamp('completed_at')->nullable();
                     $table->timestamp('after_at')->nullable();
+                    $table->string('pid')->nullable();
                 });
                 $schema->create('await', function (Blueprint $table) {
                     $table->unsignedBigInteger('queue_id');

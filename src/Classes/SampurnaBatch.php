@@ -25,15 +25,19 @@ class SampurnaBatch
     public function set(string $name, array $data): void
     {
         file_put_contents(
-            $this->batches_vault_path . $name . '.json',
+            sampurna()->helpers()->checkDir($this->batches_vault_path . $name . '.json'),
             sampurna()->helpers()->toJson($data)
         );
     }
 
-    public function get(string $name): array
+    public function get(string $name): ?array
     {
-        return sampurna()->helpers()->fromJson(
-            file_get_contents($this->batches_vault_path . $name . '.json')
-        );
+        $batch_path = $this->batches_vault_path . $name . '.json';
+        if (file_exists($batch_path)) {
+            return sampurna()->helpers()->fromJson(
+                file_get_contents($this->batches_vault_path . $name . '.json')
+            );
+        }
+        return null;
     }
 }

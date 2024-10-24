@@ -21,8 +21,10 @@ class SampurnaUnitCommand extends Command
                 $this->error("Usage: sampurna:unit run --uuid=<uuid>");
                 exit(0);
             }
-            sampurna()->unit($uuid)->dispatch();
-            $this->line("Sampurna unit uuid:$uuid launched");
+            $run = explode(':', $uuid);
+            $unit_uuid = $run[0];
+            $data_key = $run[1];
+            sampurna()->unit($unit_uuid)->streamRun($data_key);
         }
     }
 }

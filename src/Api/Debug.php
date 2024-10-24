@@ -23,9 +23,15 @@ class Debug
 //        $ww = new WaterwayParser();
 //        $ww->getCruises();
 
-        dd(
-            sampurna()->unit('unit1')->exec()
-        );
+//        dd(
+//            sampurna()->unit('unit1')->exec()
+//        );
+
+        //sampurna()->batch()->set('test.stack.unit1.0', ['OLOLOOOOO']);
+
+
+
+        sampurna()->unit('unit1')->dispatch();
 
 
     }

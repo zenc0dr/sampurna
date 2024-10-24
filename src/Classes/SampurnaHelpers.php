@@ -2,6 +2,8 @@
 
 namespace Zenc0dr\Sampurna\Classes;
 
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 use Zenc0dr\Sampurna\Traits\SingletonTrait;
 
 class SampurnaHelpers
@@ -38,5 +40,20 @@ class SampurnaHelpers
             mkdir($dirname, 0777, true);
         }
         return $dir_path;
+    }
+
+    public function filesCollection(string $dir_path, bool $recursive = false): Collection
+    {
+        $files = $recursive ? File::allFiles($dir_path) : File::files($dir_path);
+        $output = [];
+        foreach ($files as $file) {
+            $output[] = [
+                'name' => $file->getFilename(),
+                'extension' => $file->getExtension(),
+                'path' => $file->getRealPath(),
+                'size' => $file->getSize()
+            ];
+        }
+        return collect($output);
     }
 }
