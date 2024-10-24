@@ -1,7 +1,7 @@
 {
     "name": "zenc0dr/sampurna",
     "description": "सम्पूर्ण",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "license": "MIT",
     "autoload": {
         "psr-4": {
