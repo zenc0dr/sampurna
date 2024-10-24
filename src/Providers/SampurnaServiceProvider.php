@@ -3,7 +3,7 @@
 namespace Zenc0dr\Sampurna\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Zenc0dr\Sampurna\Commands\StackCommand;
+use Zenc0dr\Sampurna\Commands\SampurnaCommand;
 
 class SampurnaServiceProvider extends ServiceProvider
 {
@@ -20,7 +20,7 @@ class SampurnaServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                StackCommand::class,
+                SampurnaCommand::class,
             ]);
         }
 

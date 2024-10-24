@@ -6,6 +6,7 @@ use Zenc0dr\Sampurna\Traits\SingletonTrait;
 use Zenc0dr\Sampurna\Classes\SampurnaHelpers;
 use Zenc0dr\Sampurna\Classes\SampurnaServices;
 use Zenc0dr\Sampurna\Classes\SampurnaVault;
+use Zenc0dr\Sampurna\Classes\SampurnaUnit;
 
 class Sampurna
 {
@@ -24,5 +25,10 @@ class Sampurna
     public function services(): SampurnaServices
     {
         return SampurnaServices::getInstance();
+    }
+
+    public function unit(string $unit_name)
+    {
+        return new SampurnaUnit($unit_name);
     }
 }

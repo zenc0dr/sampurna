@@ -27,7 +27,7 @@ class SampurnaVault
     public function __construct(string $vault_name)
     {
         $this->vault_name = $vault_name;
-        $this->vault_path = config('sampurna.sampurna_vault') . "/vaults/$vault_name";
+        $this->vault_path = config('sampurna.sampurna_vault') . "/vaults/$vault_name.sqlite";
     }
 
     public function create(Closure $schema): void

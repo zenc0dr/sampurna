@@ -6,10 +6,10 @@ use App\Services\Parsers\Waterway\WaterwayParser;
 use Illuminate\Console\Command;
 use Zenc0dr\Sampurna\Services\SampurnaStackService;
 
-class StackCommand extends Command
+class SampurnaCommand extends Command
 {
-    protected $signature = 'sampurna {action?} {--uuid=}';
-    protected $description = 'Run patch';
+    protected $signature = 'sampurna {action?} {--context=}';
+    protected $description = 'Sampurna command system';
     public function handle()
     {
         sampurna()->services()->sessionStorageSet('sampurna.log.echo', true);
@@ -20,7 +20,7 @@ class StackCommand extends Command
         }
 
         if ($action === 'create') {
-            $uuid = $this->option('uuid');
+            $uuid = $this->option('context');
             if (!$uuid) {
                 $uuid = uniqid();
             }
@@ -29,9 +29,7 @@ class StackCommand extends Command
         }
 
         if ($action === 'debug') {
-            $ww = new WaterwayParser();
-            //$ww->dispatcher();
-            $ww->getCruises();
+            sampurna()->unit('unit1')->run();
         }
     }
 
