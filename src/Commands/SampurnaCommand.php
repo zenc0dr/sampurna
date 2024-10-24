@@ -2,9 +2,8 @@
 
 namespace Zenc0dr\Sampurna\Commands;
 
-use App\Services\Parsers\Waterway\WaterwayParser;
 use Illuminate\Console\Command;
-use Zenc0dr\Sampurna\Services\SampurnaStackService;
+use Zenc0dr\Sampurna\Classes\SampurnaStack;
 
 class SampurnaCommand extends Command
 {
@@ -17,15 +16,6 @@ class SampurnaCommand extends Command
 
         if (!$action) {
             $this->dropError('Action not specified');
-        }
-
-        if ($action === 'create') {
-            $uuid = $this->option('context');
-            if (!$uuid) {
-                $uuid = uniqid();
-            }
-            $stack = new SampurnaStackService();
-            $stack->create($uuid);
         }
 
         if ($action === 'debug') {

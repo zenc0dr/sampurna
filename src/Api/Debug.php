@@ -12,6 +12,10 @@ class Debug
     public function test()
     {
 
+//        dd(
+//            __METHOD__
+//        );
+
 
         //sampurna()->services()->sessionStorageSet('test', 'Тут что-то');
        //$this->test2();
@@ -20,7 +24,7 @@ class Debug
 //        $ww->getCruises();
 
         dd(
-            sampurna()->unit('unit1')->run()
+            sampurna()->unit('unit1')->exec()
         );
 
 
