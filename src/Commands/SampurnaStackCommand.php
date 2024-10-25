@@ -29,5 +29,43 @@ class SampurnaStackCommand extends Command
 
             $this->line("Sampurna stack uuid:$stack_uuid created");
         }
+
+        if ($action === 'list') {
+            $sampurna_vault = config('sampurna.sampurna_vault');
+            $stack_files = sampurna()->helpers()->filesCollection("$sampurna_vault/stacks");
+            $unit_files = sampurna()->helpers()->filesCollection("$sampurna_vault/units");
+
+            $tree = [];
+            foreach ($unit_files as $unit_file) {
+                $unit_data = sampurna()
+                    ->helpers()
+                    ->fromJsonFile($unit_file['path']);
+                if (!isset($unit_data['stack'])) {
+                    continue;
+                }
+                $unit_uuid = pathinfo($unit_file['name'], PATHINFO_FILENAME);
+                $stack_uuid = $unit_data['stack'];
+                $tree[$stack_uuid][] = [
+                    'uuid' => $unit_uuid,
+                    'name' => $unit_data['name'],
+                ];
+            }
+
+            foreach ($stack_files as $stack_file) {
+                $stack_data = sampurna()
+                    ->helpers()
+                    ->fromJsonFile($stack_file['path']);
+                $stack_uuid = pathinfo($stack_file['name'], PATHINFO_FILENAME);
+                $stack_name = $stack_data['name'];
+                $stack_units = $tree[$stack_uuid] ?? [];
+                $units_count = count($stack_units);
+                $this->line("$stack_uuid : $stack_name ($units_count)");
+                if ($stack_units) {
+                    foreach ($stack_units as $unit) {
+                        $this->line("- {$unit['uuid']} : {$unit['name']}");
+                    }
+                }
+            }
+        }
     }
 }

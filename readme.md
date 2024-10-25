@@ -1,18 +1,15 @@
 # Sampurna
 
 Sampurna in Indian languages like Sanskrit and Hindi, "sampurna" (सम्पूर्ण) translates to "complete" or "perfect". It is a library that provides a project with a simple task broker, queue, background threads, managed caching and other features required in various projects.
-
 ###### Переменные окружения
 | Ключ                  | Умолчание | Описание                                                                          |
 | --------------------- | --------- | --------------------------------------------------------------------------------- |
 | SAMPURNA_PHP_PATH     | php       | Указание интепретатора php                                                        |
 | SAMPURNA_NOHUP_ENABLE | false     | Если на хосте есть библиотека nohup то выполнение фоновых процессов более надёжно |
-
 ###### Переменные сессии
-| Ключ              | Умолчание | Описание                                                               |
-| ----------------- | --------- | ---------------------------------------------------------------------- |
-| sampurna.log.echo | null      | Если перевести в ==true== то глобальный лог будет выводиться в консоль |
-
+| Ключ              | Умолчание | Описание                                                           |
+| ----------------- | --------- | ------------------------------------------------------------------ |
+| sampurna.log.echo | null      | Если перевести в true то глобальный лог будет выводиться в консоль |
 #### Хранилища
 В качестве системы оперативных хранилищ используется база данный sqlite, так как она имеет особенности которые наилучшим образом проявляются именно в роли динамических баз. Будем в последствии называть эти базы хранилища.
 ###### Создать хранилище (Базу sqlite)
@@ -58,20 +55,14 @@ $vault->query('ships')->insert([
 >Это обычная обёртка над QueryBuilder и работа происходит с базой SQLite с именем waterway (storage/sampurna_vault/vaults/**waterway**)
 
 #### Юниты
-Юниты по сути это их манифесты которые находятся в определённой папке
+Описания (манифесты) юнитов находятся в папке заданной в `config/sampurna.php` + `/units`
 Например манифест `storage/sampurna_vault/units/azimut.waterway.json`
 ```json
 {
-    "name": "Парсер Водохода", // Обязательное поле
-    "desc": "Это парсер запускающий парсеры", // Обязательное поле
-    "call": "App.Services.Parsers.Waterway.WaterwayParser.dispatcher", // Обязательное поле
-    "mode": "stream", // Юнит запускается в фоне, возвращает ключ данных по которому будет доступен результат
+    "name": "Любое имя юнита",
+    "desc": "Тут можно описать что делает юнит",
+    "call": "App.Services.Parsers.Waterway.WaterwayParser.dispatcher",
 }
-```
-
-Запускается такой юнит напрямую так:
-```php
-sampurna()->unit('azimut.waterway')->run()
 ```
 
 ###### Таблица свойств манифеста юнита
@@ -80,3 +71,13 @@ sampurna()->unit('azimut.waterway')->run()
 | name     | да          | Имя юнита      |                                                         |
 | desc     | да          | Описание юнита |                                                         |
 | call     | да          | Вызов юнита    | App.Services.Parsers.Waterway.WaterwayParser.dispatcher |
+
+#### Artisan команды
+###### Создать новый стэк
+```bash
+php artisan sampurna:stack create --uuid="zenc0dr.stackname" --name="Название стэка"
+```
+###### Вывести список стэков
+```bash
+php artisan sampurna:stack list
+```

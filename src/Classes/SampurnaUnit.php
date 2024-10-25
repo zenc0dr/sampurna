@@ -38,7 +38,7 @@ class SampurnaUnit
     }
 
     # Постановка в очередь
-    public function dispatch(?array $batch = null, int $data_key = 0)
+    public function dispatch(?array $batch = null, int $data_key = 0): void
     {
         $unit_data = $this->readUnitData($this->unit_uuid);
         $stack_uuid = $unit_data['stack'] ?? null;

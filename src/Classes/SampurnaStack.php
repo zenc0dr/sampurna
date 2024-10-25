@@ -8,14 +8,9 @@ class SampurnaStack
 {
     private string $stack_uuid;
 
-    public function __construct(string $stack_uuid)
+    public function __construct(?string $stack_uuid = null)
     {
         $this->stack_uuid = $stack_uuid;
-    }
-
-    public function list()
-    {
-        dd('ookey list');
     }
 
     private function createStackQueueVault(): void

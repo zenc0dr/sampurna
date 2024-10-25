@@ -11,12 +11,14 @@ class SampurnaHelpers
     use SingletonTrait;
 
     #### STRINGS
-    public function toJson(array $arr = [], bool $pretty_print = false, bool $no_slashes = false): ?string
-    {
+    public function toJson(
+        array $arr = [],
+        bool $pretty_print = false,
+        bool $no_slashes = false
+    ): ?string {
         if (empty($arr)) {
             return null;
         }
-
         $options = JSON_UNESCAPED_UNICODE
             | ($pretty_print ? JSON_PRETTY_PRINT : 0)
             | ($no_slashes ? JSON_UNESCAPED_SLASHES : 0);
@@ -24,12 +26,36 @@ class SampurnaHelpers
         return json_encode($arr, $options);
     }
 
-    public function fromJson(string $string, int|bool $assoc = true): array|object|null
+    public function toJsonFile(
+        string $file_path,
+        array $arr = [],
+        bool $pretty_print = false,
+        bool $no_slashes = false
+    ): void {
+        file_put_contents(
+            sampurna()->helpers()->checkDir($file_path),
+            $this->toJson(
+                $arr,
+                $pretty_print,
+                $no_slashes
+            )
+        );
+    }
+
+    public function fromJson(string $string, int|bool $assoc = true): array|null|object
     {
         if (empty($string)) {
             return null;
         }
         return json_decode($string, $assoc);
+    }
+
+    public function fromJsonFile(string $file_path, int|bool $assoc = true): array|null|object
+    {
+        if (!file_exists($file_path)) {
+            return null;
+        }
+        return $this->fromJson(file_get_contents($file_path), $assoc);
     }
 
     #### FILES
