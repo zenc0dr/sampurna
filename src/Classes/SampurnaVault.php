@@ -2,10 +2,8 @@
 
 namespace Zenc0dr\Sampurna\Classes;
 
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Query\Builder;
 use Exception;
 use Closure;
 

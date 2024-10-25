@@ -1,6 +1,5 @@
 <?php
 
-
 if (!function_exists('sampurna')) {
     function sampurna()
     {

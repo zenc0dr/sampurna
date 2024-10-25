@@ -3,7 +3,8 @@
 namespace Zenc0dr\Sampurna\Commands;
 
 use Illuminate\Console\Command;
-use Zenc0dr\Sampurna\Classes\SampurnaUnit;
+use Exception;
+use Throwable;
 
 class SampurnaUnitCommand extends Command
 {
@@ -23,8 +24,12 @@ class SampurnaUnitCommand extends Command
             }
             $run = explode(':', $uuid);
             $unit_uuid = $run[0];
-            $data_key = $run[1];
-            sampurna()->unit($unit_uuid)->streamRun($data_key);
+            $data_key = $run[1] ?? 0;
+            try {
+                sampurna()->unit($unit_uuid)->streamRun($data_key);
+            } catch (Exception | Throwable $exception) {
+                sampurna()->services()->log($exception->getMessage(), 'error');
+            }
         }
     }
 }

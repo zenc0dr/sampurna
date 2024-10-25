@@ -8,7 +8,7 @@ class SampurnaDispatcher
 {
     use SingletonTrait;
 
-    public function run()
+    public function run(): void
     {
         $units_dir = config('sampurna.sampurna_vault') . "/units";
         $files = sampurna()->helpers()->filesCollection($units_dir);
@@ -33,6 +33,5 @@ class SampurnaDispatcher
                 dd($units_record);
             }
         }
-
     }
 }

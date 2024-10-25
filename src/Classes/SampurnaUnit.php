@@ -2,6 +2,7 @@
 
 namespace Zenc0dr\Sampurna\Classes;
 
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Exception;
 use Throwable;
 
@@ -41,66 +42,108 @@ class SampurnaUnit
     {
         $unit_data = $this->readUnitData($this->unit_uuid);
         $stack_uuid = $unit_data['stack'] ?? null;
-        if ($stack_uuid) {
-            $stack_vault = sampurna()->stack($stack_uuid)->vault();
-            $task_exists = $stack_vault->query('queue')
-                ->where('stack_uuid', $stack_uuid)
-                ->where('name', $this->unit_uuid)
-                ->where('key', $data_key)
-                ->count();
-            if (!$task_exists) {
-                $stack_vault->query('queue')->insert([
-                    'stack_uuid' => $stack_uuid,
-                    'name' => $this->unit_uuid,
-                    'key' => $data_key,
-                    'created_at' => now()
-                ]);
-                if ($batch) {
-                    sampurna()->batch()->set("$stack_uuid.$this->unit_uuid.$data_key", $batch);
-                }
+        if (!$stack_uuid) {
+            throw new Exception('Stack uuid is required');
+        }
+        $stack_vault = sampurna()->stack($stack_uuid)->vault();
+        $task_exists = $stack_vault->query('queue')
+            ->where('stack_uuid', $stack_uuid)
+            ->where('name', $this->unit_uuid)
+            ->where('key', $data_key)
+            ->count();
+        if (!$task_exists) {
+            $stack_vault->query('queue')->insert([
+                'stack_uuid' => $stack_uuid,
+                'name' => $this->unit_uuid,
+                'key' => $data_key,
+                'created_at' => now()
+            ]);
+            sampurna()->services()->log("Пакет $stack_uuid.$this->unit_uuid:$data_key поставлен в очередь");
+            if ($batch) {
+                sampurna()->batch()->set("$stack_uuid.$this->unit_uuid.$data_key", $batch);
             }
-        } else {
-            // Запуск в фоне
         }
     }
 
-    # Запуск в фоне
-    public function stream(string $unit_uuid, int $data_key = 0)
+    # Команда запуска юнита
+    public function stream(string $unit_uuid, int $data_key = 0): void
     {
         $this->artisanBackgroundExec("sampurna:unit run --uuid=$unit_uuid:$data_key");
     }
 
-    public function streamRun(int $data_key)
+    # Запуск юнита в фоне
+    public function streamRun(int $data_key): void
     {
         $pid = getmypid();
-        $unit_data = $this->readUnitData($this->unit_uuid);
-        $stack_uuid = $unit_data['stack'];
-        $stack_vault = sampurna()->stack($stack_uuid)->vault();
-        $queue_record = $stack_vault->query('queue')
-            ->where('stack_uuid', $stack_uuid)
-            ->where('name', $this->unit_uuid)
-            ->where('key', $data_key)
-            ->first();
-        $stack_vault->query('queue')
-            ->where('id', $queue_record->id)
-            ->update([
-                'pid' => $pid,
-                'start_at' => now(),
-                'status' => 'process'
-            ]);
-        $batch = sampurna()->batch("$stack_uuid.$this->unit_uuid.$data_key");
-        $call_string = $unit_data['call'];
-        $call_string = explode('.', $call_string);
-        $method = array_pop($call_string);
-        $call_string = join('\\', $call_string);
-        app($call_string)->{$method}($batch);
-        $stack_vault->query('queue')
-            ->where('id', $queue_record->id)
-            ->update([
-                'pid' => $pid,
-                'status' => 'completed',
-                'completed_at' => now()
-            ]);
+
+        if (!$pid) {
+            sampurna()->services()->abort('PID процесса не определён');
+        }
+
+        try {
+            $unit_data = $this->readUnitData($this->unit_uuid);
+            $stack_uuid = $unit_data['stack'];
+            $stack_vault = sampurna()->stack($stack_uuid)->vault();
+            $queue_record = $stack_vault->query('queue')
+                ->where('stack_uuid', $stack_uuid)
+                ->where('name', $this->unit_uuid)
+                ->where('key', $data_key)
+                ->first();
+            $stack_vault->query('queue')
+                ->where('id', $queue_record->id)
+                ->update([
+                    'pid' => $pid,
+                    'attempts' => $queue_record->attempts + 1,
+                    'start_at' => now(),
+                    'status' => 'process'
+                ]);
+            $batch = sampurna()->batch("$stack_uuid.$this->unit_uuid.$data_key");
+            $call_string = $unit_data['call'];
+            $call_string = explode('.', $call_string);
+            $method = array_pop($call_string);
+            $call_string = join('\\', $call_string);
+        } catch (Exception | Throwable $exception) {
+            sampurna()->services()
+                ->abort(
+                    'Формирование вызова завершилось с ошибкой: ' .$exception->getMessage()
+                );
+        }
+        $error = null;
+        try {
+            app($call_string)->{$method}($batch);
+        } catch (Exception | Throwable $exception) {
+            $error = $exception->getMessage();
+        }
+
+        if ($error) {
+            $stack_vault->query('queue')
+                ->where('id', $queue_record->id)
+                ->update([
+                    'pid' => null,
+                    'errors' => $this->errorsMutator($queue_record, $error)
+                ]);
+        } else {
+            $stack_vault->query('queue')
+                ->where('id', $queue_record->id)
+                ->update([
+                    'pid' => null,
+                    'status' => 'completed',
+                    'completed_at' => now()
+                ]);
+        }
+    }
+
+    private function errorsMutator(object $record, string $error): string
+    {
+        $errors = [];
+        if ($record->errors) {
+            $errors = sampurna()->helpers()->fromJson($record->errors);
+        }
+        $errors[] = [
+            'time' => now()->format('Y-m-d H:i:s'),
+            'error' => $error,
+        ];
+        return sampurna()->helpers()->toJson($errors);
     }
 
     private function readUnitData(string $unit_uuid): array
@@ -135,5 +178,6 @@ class SampurnaUnit
         }
 
         shell_exec($cli_command);
+        sampurna()->services()->log("Выполнена команда $cli_command");
     }
 }

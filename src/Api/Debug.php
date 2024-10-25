@@ -11,29 +11,7 @@ class Debug
     # http://sampurna.azimut.dc/sampurna.api.Debug:test
     public function test()
     {
-
-//        dd(
-//            __METHOD__
-//        );
-
-
-        //sampurna()->services()->sessionStorageSet('test', 'Тут что-то');
-       //$this->test2();
-
-//        $ww = new WaterwayParser();
-//        $ww->getCruises();
-
-//        dd(
-//            sampurna()->unit('unit1')->exec()
-//        );
-
-        //sampurna()->batch()->set('test.stack.unit1.0', ['OLOLOOOOO']);
-
-
-
-        sampurna()->unit('unit1')->dispatch();
-
-
+        sampurna()->dispatcher()->run();
     }
 
     public function test2()

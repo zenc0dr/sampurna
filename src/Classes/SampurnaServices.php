@@ -2,6 +2,8 @@
 
 namespace Zenc0dr\Sampurna\Classes;
 
+use Exception;
+
 class SampurnaServices
 {
     private static ?self $instance = null;
@@ -60,5 +62,11 @@ class SampurnaServices
             $message,
             FILE_APPEND
         );
+    }
+
+    public function abort(string $error_message)
+    {
+        $this->log($error_message, 'error');
+        throw new Exception($error_message);
     }
 }
