@@ -57,6 +57,7 @@ class SampurnaServices
             echo $message;
         }
 
+        # Сохранить событие в лог
         file_put_contents(
             $log_path,
             $message,

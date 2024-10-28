@@ -61,6 +61,8 @@ class SampurnaStackCommand extends Command
                 $units_count = count($stack_units);
                 $this->line("$stack_uuid : $stack_name ($units_count)");
                 if ($stack_units) {
+                    $this->line(" - uuid : name");
+                    $this->line("--------------");
                     foreach ($stack_units as $unit) {
                         $this->line("- {$unit['uuid']} : {$unit['name']}");
                     }

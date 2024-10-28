@@ -48,14 +48,14 @@ class SampurnaUnit
         $stack_vault = sampurna()->stack($stack_uuid)->vault();
         $task_exists = $stack_vault->query('queue')
             ->where('stack_uuid', $stack_uuid)
-            ->where('name', $this->unit_uuid)
-            ->where('key', $data_key)
+            ->where('unit_uuid', $this->unit_uuid)
+            ->where('data_key', $data_key)
             ->count();
         if (!$task_exists) {
             $stack_vault->query('queue')->insert([
                 'stack_uuid' => $stack_uuid,
-                'name' => $this->unit_uuid,
-                'key' => $data_key,
+                'unit_uuid' => $this->unit_uuid,
+                'data_key' => $data_key,
                 'created_at' => now()
             ]);
             sampurna()->services()->log("Пакет $stack_uuid.$this->unit_uuid:$data_key поставлен в очередь");
@@ -102,6 +102,7 @@ class SampurnaUnit
             $call_string = explode('.', $call_string);
             $method = array_pop($call_string);
             $call_string = join('\\', $call_string);
+            # Предполагается что этот участок кода принадлежит Sampurna
         } catch (Exception | Throwable $exception) {
             sampurna()->services()
                 ->abort(
@@ -110,7 +111,8 @@ class SampurnaUnit
         }
         $error = null;
         try {
-            app($call_string)->{$method}($batch);
+            # Вызов юнита
+            $unit_output = app($call_string)->{$method}($batch);
         } catch (Exception | Throwable $exception) {
             $error = $exception->getMessage();
         }
@@ -135,6 +137,7 @@ class SampurnaUnit
                     ->where('id', $queue_record->id)
                     ->update([
                         'pid' => null,
+                        'status' => 'await',
                         'errors' => $this->errorsMutator($queue_record, $error),
                         'attempts' => $attempts_count + 1,
                     ]);
@@ -151,6 +154,7 @@ class SampurnaUnit
         }
     }
 
+    # Делает массив ошибок для записи в поле errors
     private function errorsMutator(object $record, string $error): string
     {
         $errors = [];
@@ -164,15 +168,14 @@ class SampurnaUnit
         return sampurna()->helpers()->toJson($errors);
     }
 
+    # Получить манифест юнита
     public function getUnitData(string $unit_uuid = null): array
     {
         $unit_uuid = $unit_uuid ?? $this->unit_uuid;
         try {
-            $unit_data = sampurna()->helpers()->fromJson(
-                file_get_contents(
-                    "$this->units_vault_path/$unit_uuid.json"
-                )
-            );
+            $unit_data = sampurna()->helpers()
+                ->fromJsonFile("$this->units_vault_path/$unit_uuid.json");
+
         } catch (Exception $exception) {
             throw new Exception('Unable to load unit: ' . $exception->getMessage());
         }

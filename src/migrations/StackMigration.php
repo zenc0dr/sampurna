@@ -15,7 +15,7 @@ class StackMigration
                     $table->increments('id'); # Идентификатор юнита
                     $table->string('stack_uuid');
                     $table->string('unit_uuid');
-                    $table->integer('key')->unsigned()->default(0);
+                    $table->integer('data_key')->unsigned()->default(0);
                     $table->string('status')->default('ready');
                     $table->integer('sec')->default(0);
                     $table->mediumText('errors')->nullable();
