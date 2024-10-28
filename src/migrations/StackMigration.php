@@ -6,9 +6,8 @@ use Illuminate\Database\Schema\Blueprint;
 
 class StackMigration
 {
-    public function migrate(mixed $context = null): void
+    public function migrate(string $stack_uuid): void
     {
-        $stack_uuid = $context;
         $stack_vault_name = "$stack_uuid.queue";
         sampurna()->vault($stack_vault_name)
             ->create(function ($schema) {
