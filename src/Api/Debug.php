@@ -11,7 +11,8 @@ class Debug
     # http://sampurna.azimut.dc/sampurna.api.Debug:test
     public function test()
     {
-        sampurna()->dispatcher()->run();
+        sampurna()->migrate('StackMigration', 'test.stack');
+        //sampurna()->dispatcher()->run();
         //sampurna()->unit('unit1')->dispatch();
     }
 

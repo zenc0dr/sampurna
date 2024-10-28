@@ -10,6 +10,7 @@ use Zenc0dr\Sampurna\Classes\SampurnaStack;
 use Zenc0dr\Sampurna\Classes\SampurnaVault;
 use Zenc0dr\Sampurna\Classes\SampurnaUnit;
 use Zenc0dr\Sampurna\Classes\SampurnaBatch;
+use Zenc0dr\Sampurna\Classes\SampurnaMigration;
 
 class Sampurna
 {
@@ -43,6 +44,11 @@ class Sampurna
     public function dispatcher(): SampurnaDispatcher
     {
         return SampurnaDispatcher::getInstance();
+    }
+
+    public function migrate($migration_name, mixed $context = null): void
+    {
+        SampurnaMigration::getInstance()->run($migration_name, $context);
     }
 
     public function batch(?string $name = null, ?array $data = null): SampurnaBatch|array|null

@@ -13,36 +13,13 @@ class SampurnaStack
         $this->stack_uuid = $stack_uuid;
     }
 
+    # Типовое хранилище стэка
     private function createStackQueueVault(): void
     {
-        $stack_vault_name = "$this->stack_uuid.queue";
-        sampurna()->vault($stack_vault_name)
-            ->create(function ($schema) {
-                $schema->create('queue', function (Blueprint $table) {
-                    $table->increments('id');
-                    $table->string('stack_uuid');
-                    $table->string('name');
-                    $table->integer('key')->unsigned()->default(0);
-                    $table->string('status')->default('ready');
-                    $table->integer('sec')->default(0);
-                    $table->mediumText('errors')->nullable();
-                    $table->integer('attempts')->default(0);
-                    $table->timestamp('created_at');
-                    $table->timestamp('start_at')->nullable();
-                    $table->timestamp('completed_at')->nullable();
-                    $table->timestamp('after_at')->nullable();
-                    $table->string('pid')->nullable();
-                });
-                $schema->create('await', function (Blueprint $table) {
-                    $table->unsignedBigInteger('queue_id');
-                    $table->string('name');
-                    $table->integer('key')->unsigned()->default(0);
-                    $table->timestamp('created_at');
-                    $table->string('status')->default('wait');
-                });
-            });
+        sampurna()->migrate('StackMigration', $this->stack_uuid);
     }
 
+    # Создание нового стека с установками по умолчанию
     public function create(string $name = null): bool
     {
         $helpers = sampurna()->helpers();
@@ -69,6 +46,7 @@ class SampurnaStack
         return false;
     }
 
+    # Получение массива данных манифеста стэка
     public function getStackData(): array
     {
         $helpers = sampurna()->helpers();
