@@ -3,6 +3,7 @@
 namespace Zenc0dr\Sampurna\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 
 class SampurnaServiceCommand extends Command
 {
@@ -18,7 +19,10 @@ class SampurnaServiceCommand extends Command
         }
 
         if ($action === 'debug') {
-
+            Artisan::call('sampurna:stack create', [
+                '--uuid' => 'test.stack',
+                '--name' => 'Тестовый стек',
+            ]);
         }
     }
 

@@ -11,8 +11,8 @@ class Debug
     # http://sampurna.azimut.dc/sampurna.api.Debug:test
     public function test()
     {
-        sampurna()->stack()->list();
-        //sampurna()->dispatcher()->run();
+        sampurna()->dispatcher()->run();
+        //sampurna()->unit('unit1')->dispatch();
     }
 
     public function test2()

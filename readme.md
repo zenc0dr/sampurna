@@ -75,9 +75,14 @@ $vault->query('ships')->insert([
 #### Artisan команды
 ###### Создать новый стэк
 ```bash
-php artisan sampurna:stack create --uuid="zenc0dr.stackname" --name="Название стэка"
+php artisan sampurna:stack create --uuid="test.stack" --name="Тестовый стек"
 ```
 ###### Вывести список стэков
 ```bash
 php artisan sampurna:stack list
 ```
+###### Запустить юнита из очереди
+```bash
+php artisan sampurna:unit run --uuid=unit1:0
+```
+

@@ -25,7 +25,7 @@ class SampurnaUnit
         }
 
         try {
-            $unit_data = $this->readUnitData($this->unit_uuid);
+            $unit_data = $this->getUnitData($this->unit_uuid);
             $call_string = $unit_data['call'];
             $call_string = explode('.', $call_string);
             $method = array_pop($call_string);
@@ -40,7 +40,7 @@ class SampurnaUnit
     # Постановка в очередь
     public function dispatch(?array $batch = null, int $data_key = 0): void
     {
-        $unit_data = $this->readUnitData($this->unit_uuid);
+        $unit_data = $this->getUnitData($this->unit_uuid);
         $stack_uuid = $unit_data['stack'] ?? null;
         if (!$stack_uuid) {
             throw new Exception('Stack uuid is required');
@@ -81,7 +81,7 @@ class SampurnaUnit
         }
 
         try {
-            $unit_data = $this->readUnitData($this->unit_uuid);
+            $unit_data = $this->getUnitData($this->unit_uuid);
             $stack_uuid = $unit_data['stack'];
             $stack_vault = sampurna()->stack($stack_uuid)->vault();
             $queue_record = $stack_vault->query('queue')
@@ -115,13 +115,31 @@ class SampurnaUnit
             $error = $exception->getMessage();
         }
 
+        # Если была ошибка
         if ($error) {
-            $stack_vault->query('queue')
-                ->where('id', $queue_record->id)
-                ->update([
-                    'pid' => null,
-                    'errors' => $this->errorsMutator($queue_record, $error)
-                ]);
+            $attempts_max = intval($unit_data['attempts_max']);
+            $attempts_count = intval($queue_record->attempts);
+
+            # Окончательная ошибка
+            if ($attempts_count >= $attempts_max) {
+                $stack_vault->query('queue')
+                    ->where('id', $queue_record->id)
+                    ->update([
+                        'pid' => null,
+                        'status' => 'error',
+                        'errors' => $this->errorsMutator($queue_record, $error),
+                        'after_at' => null
+                    ]);
+            } else {
+                $stack_vault->query('queue')
+                    ->where('id', $queue_record->id)
+                    ->update([
+                        'pid' => null,
+                        'errors' => $this->errorsMutator($queue_record, $error),
+                        'attempts' => $attempts_count + 1,
+                    ]);
+            }
+        # Если всё завершилось
         } else {
             $stack_vault->query('queue')
                 ->where('id', $queue_record->id)
@@ -146,8 +164,9 @@ class SampurnaUnit
         return sampurna()->helpers()->toJson($errors);
     }
 
-    private function readUnitData(string $unit_uuid): array
+    public function getUnitData(string $unit_uuid = null): array
     {
+        $unit_uuid = $unit_uuid ?? $this->unit_uuid;
         try {
             $unit_data = sampurna()->helpers()->fromJson(
                 file_get_contents(

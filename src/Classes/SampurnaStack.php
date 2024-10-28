@@ -69,6 +69,14 @@ class SampurnaStack
         return false;
     }
 
+    public function getStackData(): array
+    {
+        $helpers = sampurna()->helpers();
+        $sampurna_vault = config('sampurna.sampurna_vault');
+        $scheme_path = $helpers->checkDir($sampurna_vault . "/stacks/$this->stack_uuid.json");
+        return sampurna()->helpers()->fromJsonFile($scheme_path);
+    }
+
     public function vault()
     {
         return sampurna()->vault("$this->stack_uuid.queue");
