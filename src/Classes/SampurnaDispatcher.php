@@ -48,6 +48,9 @@ class SampurnaDispatcher
             $batch = sampurna()->batch($batch_key);
             $unit->dispatch($batch, $batch_key);
 
+
+            //dd('???');
+
             # Тут надо запустить и пометить
             $unit->stream($units_record->name, $units_record->key);
         }
