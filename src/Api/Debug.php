@@ -11,8 +11,15 @@ class Debug
     # http://sampurna.azimut.dc/sampurna.api.Debug:test
     public function test()
     {
+        dd(
+            app('Zenc0dr\Sampurna\Tests\TestUnits')->test0('popopo')
+        );
+
+        dd(
+            sampurna()->unit('test_unit_0')->exec('Test completed!')
+        );
         //sampurna()->migrate('StackMigration', 'test.stack');
-        sampurna()->dispatcher()->run();
+        //sampurna()->dispatcher()->run();
         //sampurna()->unit('unit1')->dispatch();
     }
 

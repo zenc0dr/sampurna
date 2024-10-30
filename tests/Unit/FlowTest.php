@@ -6,9 +6,6 @@ use Tests\TestCase;
 
 class FlowTest extends TestCase
 {
-    private static string $test_stack_uuid;
-    private static string $test_stack_path;
-
     public function test_create_stack()
     {
         sampurna()->stack('sampurna_test_stack')->remove();
@@ -19,13 +16,28 @@ class FlowTest extends TestCase
         );
     }
 
+    public function test_create_unit0()
+    {
+        sampurna()->unit('test_unit_0')->remove();
+        sampurna()->unit('test_unit_0')->create([
+            'name' => 'Тестовый юнит 0',
+            'call' => 'Zenc0dr.Sampurna.Tests.TestUnits.test0',
+            'mode' => 'direct' // Юнит с прямым выполнением
+        ]);
+
+        $this->assertTrue(
+            sampurna()->unit('test_unit_0')
+                ->getUnitData()['call'] === 'Zenc0dr.Sampurna.Tests.TestUnits.test0'
+        );
+    }
+
     public function test_create_unit1()
     {
         sampurna()->unit('test_unit_1')->remove();
         sampurna()->unit('test_unit_1')->create([
             'name' => 'Тестовый юнит 1',
             'stack' => 'sampurna_test_stack',
-            'call' => 'Zen.Sampurna.Tests.TestUnits.test1',
+            'call' => 'Zenc0dr.Sampurna.Tests.TestUnits.test1',
             'attempts_max' => 3,
             'attempts_pause' => 10,
             'mode' => 'dispatcher' // Юнит который ставится диспетчером в очередь на выполнение
@@ -33,12 +45,30 @@ class FlowTest extends TestCase
 
         $this->assertTrue(
             sampurna()->unit('test_unit_1')
-                ->getUnitData()['call'] === 'Zen.Sampurna.Tests.TestUnits.test1'
+                ->getUnitData()['call'] === 'Zenc0dr.Sampurna.Tests.TestUnits.test1'
         );
     }
 
-    public function test_dispatch()
+    public function test_create_unit2()
     {
-        
+        sampurna()->unit('test_unit_2')->remove();
+        sampurna()->unit('test_unit_2')->create([
+            'name' => 'Тестовый юнит 2',
+            'stack' => 'sampurna_test_stack',
+            'call' => 'Zenc0dr.Sampurna.Tests.TestUnits.test2',
+            'attempts_max' => 3,
+            'attempts_pause' => 10
+        ]);
+
+        $this->assertTrue(
+            sampurna()->unit('test_unit_2')
+                ->getUnitData()['call'] === 'Zenc0dr.Sampurna.Tests.TestUnits.test2'
+        );
+    }
+
+    public function test_unit_direct_call()
+    {
+        $test_phrase = sampurna()->unit('test_unit_0')->exec('Test completed!');
+        $this->assertTrue($test_phrase === 'Test completed!');
     }
 }

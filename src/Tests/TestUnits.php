@@ -1,11 +1,16 @@
 <?php
 
-namespace Zen\Sampura\Tests;
+namespace Zenc0dr\Sampurna\Tests;
 
 use Illuminate\Database\Schema\Blueprint;
 
 class TestUnits
 {
+    public function test0(string $test_phrase): string
+    {
+        return $test_phrase;
+    }
+
     public function test1()
     {
         sampurna()->vault('test_vault')
