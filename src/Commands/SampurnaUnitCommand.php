@@ -8,7 +8,7 @@ use Throwable;
 
 class SampurnaUnitCommand extends Command
 {
-    protected $signature = 'sampurna:unit {action} {--uuid=} {--unit_data=}';
+    protected $signature = 'sampurna:unit {action} {--uuid=} {--name=} {--unit_data=}';
     protected $description = 'Sampurna units control';
 
     public function handle()
@@ -18,8 +18,10 @@ class SampurnaUnitCommand extends Command
         $uuid = $this->option('uuid');
 
         if ($action === 'create') {
-            $unit_data = sampurna()->helpers()->fromJson($this->option('unit_data'));
-            sampurna()->unit($uuid)->create($unit_data);
+            sampurna()->unit($uuid)->create(
+                sampurna()->helpers()
+                    ->fromJson($this->option('unit_data'))
+            );
         }
 
         if ($action === 'run') {

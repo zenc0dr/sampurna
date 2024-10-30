@@ -13,7 +13,7 @@ class SampurnaStack
         $this->stack_uuid = $stack_uuid;
     }
 
-    public function getStackManifestPath(): string
+    public function getManifestPath(): string
     {
         $sampurna_vault = config('sampurna.sampurna_vault');
         return sampurna()->helpers()->checkDir($sampurna_vault . "/stacks/$this->stack_uuid.json");
@@ -23,7 +23,7 @@ class SampurnaStack
     public function create(string $uuid = null): bool
     {
         $helpers = sampurna()->helpers();
-        $stack_manifest_path = $this->getStackManifestPath();
+        $stack_manifest_path = $this->getManifestPath();
         $new_stack = $helpers->fromJsonFile(__DIR__ . '/../resources/stacks/new_stack.json');
 
         if ($uuid) {
@@ -43,7 +43,7 @@ class SampurnaStack
 
     public function remove(): void
     {
-        $stack_manifest_path = $this->getStackManifestPath();
+        $stack_manifest_path = $this->getManifestPath();
         if (file_exists($stack_manifest_path)) {
             unlink($stack_manifest_path);
         }
@@ -51,7 +51,7 @@ class SampurnaStack
     }
 
     # Получение массива данных манифеста стэка
-    public function getStackData(): array
+    public function getManifestData(): array
     {
         $helpers = sampurna()->helpers();
         $sampurna_vault = config('sampurna.sampurna_vault');

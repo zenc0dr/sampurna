@@ -20,9 +20,9 @@ class TestUnits
                 });
             });
 
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 10; $i++) {
             sampurna()->services()->log("Отработал unit1 вызов: $i");
-            sampurna()->unit('unit2')->dispatch([
+            sampurna()->unit('test_unit_2')->dispatch([
                 'batch_data' =>  "From unit1.$i"
             ], $i);
         }

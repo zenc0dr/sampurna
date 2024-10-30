@@ -7,7 +7,7 @@ use Zenc0dr\Sampurna\Classes\SampurnaStack;
 
 class SampurnaStackCommand extends Command
 {
-    protected $signature = 'sampurna:stack {action} {--uuid=} {--name=}';
+    protected $signature = 'sampurna:stack {action} {--uuid=} {--stack_data=}';
     protected $description = 'Sampurna stacks control';
 
     public function handle()
@@ -22,9 +22,8 @@ class SampurnaStackCommand extends Command
                 $this->error("Usage: sampurna:stack create --uuid=<uuid>");
                 exit(0);
             }
-
             sampurna()->stack($stack_uuid)->create(
-                $this->option('name')
+                sampurna()->helpers()->fromJson($this->option('stack_data'))
             );
 
             $this->line("Sampurna stack uuid:$stack_uuid created");

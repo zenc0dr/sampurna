@@ -16,7 +16,7 @@ class SampurnaDispatcher
         foreach ($files as $file) {
 
             $unit_uuid = preg_replace('/\.json$/', '', $file['name']);
-            $unit_data = sampurna()->unit($unit_uuid)->getUnitData();
+            $unit_data = sampurna()->unit($unit_uuid)->getManifestData();
             if (isset($unit_data['stack'])) {
                 if (isset($unit_data['mode']) && $unit_data['mode'] === 'dispatcher') {
                     sampurna()->unit($unit_uuid)->dispatch();

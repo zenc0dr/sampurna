@@ -10,6 +10,7 @@ class SampurnaUnit
 {
     private string $units_vault_path;
     private string $unit_uuid;
+    private ?array $manifest_data = null;
 
     public function __construct(string $unit_uuid)
     {
@@ -17,17 +18,38 @@ class SampurnaUnit
         $this->units_vault_path = config('sampurna.sampurna_vault') . '/units';
     }
 
-    public function getUnitManifestPath(): string
+    # Создать юнита
+    public function create(array $unit_data): void
+    {
+        $unit_path = $this->getManifestPath();
+        sampurna()->helpers()
+            ->toJsonFile($unit_path, $unit_data, true);
+    }
+
+    public function getManifestPath(): string
     {
         return sampurna()->helpers()
             ->checkDir("$this->units_vault_path/$this->unit_uuid.json");
     }
 
-    public function create(array $unit_data): void
+    # Получить манифест юнита
+    public function getManifestData(): array
     {
-        $unit_path = $this->getUnitManifestPath();
-        sampurna()->helpers()
-            ->toJsonFile($unit_path, $unit_data, true);
+        if ($this->manifest_data) {
+            return $this->manifest_data;
+        }
+
+        try {
+            $manifest_data = sampurna()->helpers()
+                ->fromJsonFile("$this->units_vault_path/$this->unit_uuid.json");
+
+        } catch (Exception $exception) {
+            throw new Exception('Unable to load unit: ' . $exception->getMessage());
+        }
+        if (!$manifest_data) {
+            throw new Exception('Unit data is empty');
+        }
+        return $this->manifest_data = $manifest_data;
     }
 
     public function remove(): void
@@ -47,7 +69,7 @@ class SampurnaUnit
         }
 
         try {
-            $unit_data = $this->getUnitData($this->unit_uuid);
+            $unit_data = $this->getManifestData();
             $call_string = $unit_data['call'];
             $call_string = explode('.', $call_string);
             $method = array_pop($call_string);
@@ -62,7 +84,7 @@ class SampurnaUnit
     # Постановка в очередь
     public function dispatch(?array $batch = null, int $data_key = 0): void
     {
-        $unit_data = $this->getUnitData($this->unit_uuid);
+        $unit_data = $this->getManifestData();
         $stack_uuid = $unit_data['stack'] ?? null;
         if (!$stack_uuid) {
             throw new Exception('Stack uuid is required');
@@ -88,9 +110,9 @@ class SampurnaUnit
     }
 
     # Команда запуска юнита
-    public function stream(string $unit_uuid, int $data_key = 0): void
+    public function stream(int $data_key = 0): void
     {
-        $this->artisanBackgroundExec("sampurna:unit run --uuid=$unit_uuid:$data_key");
+        $this->artisanBackgroundExec("sampurna:unit run --uuid=$this->unit_uuid:$data_key");
     }
 
     # Запуск юнита в фоне
@@ -103,13 +125,25 @@ class SampurnaUnit
         }
 
         try {
-            $unit_data = $this->getUnitData($this->unit_uuid);
+            $unit_data = $this->getManifestData($this->unit_uuid);
             $stack_uuid = $unit_data['stack'];
-            $stack_vault = sampurna()->stack($stack_uuid)->vault();
+            $stack = sampurna()->stack($stack_uuid);
+            $stack_vault = $stack->vault();
+            $stack_data = $stack->getManifestData();
+
+            # В случае если у стэка своё отдельное хранилище
+            if (isset($stack_data['vault'])) {
+                $vault_path = str_replace('base_path:', base_path(), $stack_data['vault']);
+                $vault_path = str_replace('storage_path:', storage_path(), $vault_path);
+                config([
+                    'sampurna.sampurna_vault' => $vault_path
+                ]);
+            }
+
             $queue_record = $stack_vault->query('queue')
                 ->where('stack_uuid', $stack_uuid)
-                ->where('name', $this->unit_uuid)
-                ->where('key', $data_key)
+                ->where('unit_uuid', $this->unit_uuid)
+                ->where('data_key', $data_key)
                 ->first();
             $stack_vault->query('queue')
                 ->where('id', $queue_record->id)
@@ -126,9 +160,12 @@ class SampurnaUnit
             $call_string = join('\\', $call_string);
             # Предполагается что этот участок кода принадлежит Sampurna
         } catch (Exception | Throwable $exception) {
+            $message = $exception->getMessage();
+            $file = $exception->getFile();
+            $line = $exception->getLine();
             sampurna()->services()
                 ->abort(
-                    'Формирование вызова завершилось с ошибкой: ' .$exception->getMessage()
+                    "Формирование вызова завершилось с ошибкой: $file:$line $message "
                 );
         }
         $error = null;
@@ -188,23 +225,6 @@ class SampurnaUnit
             'error' => $error,
         ];
         return sampurna()->helpers()->toJson($errors);
-    }
-
-    # Получить манифест юнита
-    public function getUnitData(string $unit_uuid = null): array
-    {
-        $unit_uuid = $unit_uuid ?? $this->unit_uuid;
-        try {
-            $unit_data = sampurna()->helpers()
-                ->fromJsonFile("$this->units_vault_path/$unit_uuid.json");
-
-        } catch (Exception $exception) {
-            throw new Exception('Unable to load unit: ' . $exception->getMessage());
-        }
-        if (!$unit_data) {
-            throw new Exception('Unit data is empty');
-        }
-        return $unit_data;
     }
 
     private function artisanBackgroundExec($cli_command): void

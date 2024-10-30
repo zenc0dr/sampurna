@@ -11,7 +11,8 @@ class Debug
     # http://sampurna.azimut.dc/sampurna.api.Debug:test
     public function test()
     {
-        sampurna()->dispatcher()->run();
+        //sampurna()->dispatcher()->run();
+        sampurna()->unit('test_unit_1')->stream();
         dd('ok');
 
         dd(

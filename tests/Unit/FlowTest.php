@@ -6,13 +6,21 @@ use Tests\TestCase;
 
 class FlowTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+//        config([
+//            'sampurna.sampurna_vault' => storage_path('sampurna_vault_test')
+//        ]);
+    }
+
     public function test_create_stack()
     {
         sampurna()->stack('sampurna_test_stack')->remove();
         sampurna()->stack('sampurna_test_stack')->create('Sampurna stack test');
         $this->assertTrue(
             sampurna()->stack('sampurna_test_stack')
-                ->getStackData()['name'] === 'Sampurna stack test'
+                ->getManifestData()['name'] === 'Sampurna stack test'
         );
     }
 
@@ -22,12 +30,11 @@ class FlowTest extends TestCase
         sampurna()->unit('test_unit_0')->create([
             'name' => 'Тестовый юнит 0',
             'call' => 'Zenc0dr.Sampurna.Tests.TestUnits.test0',
-            'mode' => 'direct' // Юнит с прямым выполнением
+            'mode' => 'direct'
         ]);
-
         $this->assertTrue(
             sampurna()->unit('test_unit_0')
-                ->getUnitData()['call'] === 'Zenc0dr.Sampurna.Tests.TestUnits.test0'
+                ->getManifestData()['call'] === 'Zenc0dr.Sampurna.Tests.TestUnits.test0'
         );
     }
 
@@ -45,7 +52,7 @@ class FlowTest extends TestCase
 
         $this->assertTrue(
             sampurna()->unit('test_unit_1')
-                ->getUnitData()['call'] === 'Zenc0dr.Sampurna.Tests.TestUnits.test1'
+                ->getManifestData()['call'] === 'Zenc0dr.Sampurna.Tests.TestUnits.test1'
         );
     }
 
@@ -62,7 +69,7 @@ class FlowTest extends TestCase
 
         $this->assertTrue(
             sampurna()->unit('test_unit_2')
-                ->getUnitData()['call'] === 'Zenc0dr.Sampurna.Tests.TestUnits.test2'
+                ->getManifestData()['call'] === 'Zenc0dr.Sampurna.Tests.TestUnits.test2'
         );
     }
 
@@ -83,5 +90,10 @@ class FlowTest extends TestCase
         $this->assertTrue(
             $record?->data_key === 0 && $record?->status === 'ready'
         );
+    }
+
+    public function test_stream()
+    {
+        sampurna()->unit('test_unit_1')->stream();
     }
 }
