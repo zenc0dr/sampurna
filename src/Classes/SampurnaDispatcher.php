@@ -14,10 +14,13 @@ class SampurnaDispatcher
         $files = sampurna()->helpers()->filesCollection($units_dir);
         $stacks = [];
         foreach ($files as $file) {
-            $unit_data = sampurna()->helpers()->fromJson(
-                file_get_contents($file['path'])
-            );
+
+            $unit_uuid = preg_replace('/\.json$/', '', $file['name']);
+            $unit_data = sampurna()->unit($unit_uuid)->getUnitData();
             if (isset($unit_data['stack'])) {
+                if (isset($unit_data['mode']) && $unit_data['mode'] === 'dispatcher') {
+                    sampurna()->unit($unit_uuid)->dispatch();
+                }
                 $stacks[] = $unit_data['stack'];
             }
         }
@@ -28,7 +31,7 @@ class SampurnaDispatcher
             $stack_vault = sampurna()->stack($stack_uuid)->vault();
 
             # Запуск в потоке юнитов со статусом ready
-            $this->unitReadyHandle($stack_vault);
+            //$this->unitReadyHandle($stack_vault);
         }
     }
 

@@ -20,7 +20,7 @@ class TestUnits
                 });
             });
 
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 3; $i++) {
             sampurna()->services()->log("Отработал unit1 вызов: $i");
             sampurna()->unit('unit2')->dispatch([
                 'batch_data' =>  "From unit1.$i"
@@ -32,11 +32,12 @@ class TestUnits
     {
         $batch_data = $batch['batch_data'];
         for ($i = 0; $i < 10; $i++) {
+            $batch_data['iteration'] = $i;
             sampurna()->services()->log("Отработал unit2 вызов: $i");
             sampurna()->vault('test_vault')
                 ->query('test_data')
                 ->insert([
-                    'data' => $batch_data,
+                    'data' => sampurna()->helpers()->toJson($batch_data),
                 ]);
         }
     }
