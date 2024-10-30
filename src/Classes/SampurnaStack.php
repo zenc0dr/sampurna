@@ -13,28 +13,41 @@ class SampurnaStack
         $this->stack_uuid = $stack_uuid;
     }
 
+    public function getStackManifestPath(): string
+    {
+        $sampurna_vault = config('sampurna.sampurna_vault');
+        return sampurna()->helpers()->checkDir($sampurna_vault . "/stacks/$this->stack_uuid.json");
+    }
+
     # Создание нового стека с установками по умолчанию
-    public function create(string $name = null): bool
+    public function create(string $uuid = null): bool
     {
         $helpers = sampurna()->helpers();
-        $sampurna_vault = config('sampurna.sampurna_vault');
-        $scheme_path = $helpers->checkDir($sampurna_vault . "/stacks/$this->stack_uuid.json");
+        $stack_manifest_path = $this->getStackManifestPath();
         $new_stack = $helpers->fromJsonFile(__DIR__ . '/../resources/stacks/new_stack.json');
 
-
-        if ($name) {
-            $new_stack['name'] = $name;
+        if ($uuid) {
+            $new_stack['name'] = $uuid;
         }
         file_put_contents(
-            $scheme_path,
-            sampurna()->helpers()->toJson($new_stack, true)
+            $stack_manifest_path,
+            $helpers->toJson($new_stack, true)
         );
-        if (file_exists($scheme_path)) {
+        if (file_exists($stack_manifest_path)) {
             # Создать хранилище стэка
             sampurna()->migrate('StackMigration', $this->stack_uuid);
             return true;
         }
         return false;
+    }
+
+    public function remove(): void
+    {
+        $stack_manifest_path = $this->getStackManifestPath();
+        if (file_exists($stack_manifest_path)) {
+            unlink($stack_manifest_path);
+        }
+        $this->vault()->truncate();
     }
 
     # Получение массива данных манифеста стэка
@@ -46,7 +59,7 @@ class SampurnaStack
         return sampurna()->helpers()->fromJsonFile($scheme_path);
     }
 
-    public function vault()
+    public function vault(): SampurnaVault
     {
         return sampurna()->vault("$this->stack_uuid.queue");
     }

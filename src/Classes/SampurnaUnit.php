@@ -17,6 +17,28 @@ class SampurnaUnit
         $this->units_vault_path = config('sampurna.sampurna_vault') . '/units';
     }
 
+    public function getUnitManifestPath(): string
+    {
+        return sampurna()->helpers()
+            ->checkDir("$this->units_vault_path/$this->unit_uuid.json");
+    }
+
+    public function create(array $unit_data): void
+    {
+        $unit_path = $this->getUnitManifestPath();
+        sampurna()->helpers()
+            ->toJsonFile($unit_path, $unit_data, true);
+    }
+
+    public function remove(): void
+    {
+        $unit_path = sampurna()->helpers()
+            ->checkDir("$this->units_vault_path/$this->unit_uuid.json");
+        if (file_exists($unit_path)) {
+            unlink($unit_path);
+        }
+    }
+
     # Прямой вызов
     public function exec(...$input_data)
     {
