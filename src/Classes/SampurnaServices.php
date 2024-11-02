@@ -72,4 +72,27 @@ class SampurnaServices
         $this->log($error_message, 'error');
         throw new Exception($error_message);
     }
+
+    public function artisanBackgroundExec($cli_command): void
+    {
+        $php_path = env('SAMPURNA_PHP_PATH', 'php');
+        $nohup_enable = env('SAMPURNA_NOHUP_ENABLE', false);
+
+        $dir = base_path();
+        $output = '/dev/null';
+        $output_errors = '/dev/null';
+        $cli_command = "$php_path $dir/artisan $cli_command >$output 2>$output_errors &";
+
+        if ($nohup_enable) {
+            $cli_command = "nohup $cli_command";
+        }
+
+        shell_exec($cli_command);
+        $this->log("Выполнена команда $cli_command");
+    }
+
+    public function pidIsActive(int $pid): bool
+    {
+        return posix_kill($pid, 0);
+    }
 }

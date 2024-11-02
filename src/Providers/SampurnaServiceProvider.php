@@ -3,7 +3,8 @@
 namespace Zenc0dr\Sampurna\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Zenc0dr\Sampurna\Commands\SampurnaServiceCommand;
+use Zenc0dr\Sampurna\Commands\SampurnaDispatcherCommand;
+use Zenc0dr\Sampurna\Commands\SampurnaDaemonCommand;
 use Zenc0dr\Sampurna\Commands\SampurnaStackCommand;
 use Zenc0dr\Sampurna\Commands\SampurnaUnitCommand;
 use Illuminate\Console\Scheduling\Schedule;
@@ -23,9 +24,10 @@ class SampurnaServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                SampurnaServiceCommand::class,
+                SampurnaDispatcherCommand::class,
+                SampurnaDaemonCommand::class,
                 SampurnaStackCommand::class,
-                SampurnaUnitCommand::class
+                SampurnaUnitCommand::class,
             ]);
         }
 
@@ -41,6 +43,6 @@ class SampurnaServiceProvider extends ServiceProvider
 
     protected function scheduleTasks(Schedule $schedule): void
     {
-        $schedule->command('sampurna:unit')->withoutOverlapping();
+        $schedule->command('sampurna:dispatcher');
     }
 }

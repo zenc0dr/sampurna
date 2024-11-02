@@ -112,7 +112,10 @@ class SampurnaUnit
     # Команда запуска юнита
     public function stream(int $data_key = 0): void
     {
-        $this->artisanBackgroundExec("sampurna:unit run --uuid=$this->unit_uuid:$data_key");
+        sampurna()->services()
+            ->artisanBackgroundExec(
+                "sampurna:unit run --uuid=$this->unit_uuid:$data_key"
+            );
     }
 
     # Запуск юнита в фоне
@@ -135,6 +138,11 @@ class SampurnaUnit
                 ->where('unit_uuid', $this->unit_uuid)
                 ->where('data_key', $data_key)
                 ->first();
+
+            # Предотвращение коллизии вызова
+            if (!in_array($queue_record->status, ['ready', 'await'])) {
+                return;
+            }
 
             $stack_vault->query('queue')
                 ->where('id', $queue_record->id)
@@ -224,23 +232,5 @@ class SampurnaUnit
             "Задача: $record->unit_uuid:$record->data_key завершилась с ошибкой $error"
         , 'error');
         return sampurna()->helpers()->toJson($errors);
-    }
-
-    private function artisanBackgroundExec($cli_command): void
-    {
-        $php_path = env('SAMPURNA_PHP_PATH', 'php');
-        $nohup_enable = env('SAMPURNA_NOHUP_ENABLE', false);
-
-        $dir = base_path();
-        $output = '/dev/null';
-        $output_errors = '/dev/null';
-        $cli_command = "$php_path $dir/artisan $cli_command >$output 2>$output_errors &";
-
-        if ($nohup_enable) {
-            $cli_command = "nohup $cli_command";
-        }
-
-        shell_exec($cli_command);
-        sampurna()->services()->log("Выполнена команда $cli_command");
     }
 }
