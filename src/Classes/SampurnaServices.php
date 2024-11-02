@@ -80,7 +80,7 @@ class SampurnaServices
 
         $dir = base_path();
         $output = '/dev/null';
-        $output_errors = '/dev/null';
+        $output_errors = env('SAMPURNA_DAEMON_ERRORS', '/dev/null');;
         $cli_command = "$php_path $dir/artisan $cli_command >$output 2>$output_errors &";
 
         if ($nohup_enable) {

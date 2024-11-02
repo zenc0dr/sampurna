@@ -11,7 +11,9 @@ class Debug
     # http://sampurna.azimut.dc/sampurna.api.Debug:test
     public function test()
     {
-
+        dd(
+            env('SAMPURNA_PHP_PATH')
+        );
     }
 
     # http://sampurna.azimut.dc/sampurna.api.Debug:dispatcherTest

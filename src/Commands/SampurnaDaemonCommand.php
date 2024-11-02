@@ -19,6 +19,18 @@ class SampurnaDaemonCommand extends Command
                 SampurnaDaemon::enableDaemon();
             } elseif ($action === 'disable') {
                 SampurnaDaemon::disableDaemon();
+            } elseif ($action === 'status') {
+                $pid_path = SampurnaDaemon::pidPath();
+                if (!file_exists($pid_path)) {
+                    $this->line("Демон не работает (pid отсутствует)");
+                } else {
+                    $daemon_pid = intval(file_get_contents(SampurnaDaemon::pidPath()));
+                    if (sampurna()->services()->pidIsActive($daemon_pid)) {
+                        $this->line("Демон работает");
+                    } else {
+                        $this->line("Демон не работает (pid присутствует)");
+                    }
+                }
             }
         } else {
             SampurnaDaemon::run();

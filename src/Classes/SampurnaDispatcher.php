@@ -16,7 +16,6 @@ class SampurnaDispatcher
         $files = sampurna()->helpers()->filesCollection($units_dir);
         $stacks = [];
         foreach ($files as $file) {
-
             $unit_uuid = preg_replace('/\.json$/', '', $file['name']);
             $unit_data = sampurna()->unit($unit_uuid)->getManifestData();
             if (isset($unit_data['stack'])) {
@@ -37,7 +36,7 @@ class SampurnaDispatcher
         foreach ($stacks as $stack_uuid) {
             $stack_vault = sampurna()->stack($stack_uuid)->vault();
 
-            # Запуск в потоке юнитов со статусом ready
+            # Запуск юнитов
             $this->unitsHandler($stack_vault);
         }
     }

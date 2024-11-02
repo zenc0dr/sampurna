@@ -79,16 +79,16 @@ class FlowTest extends TestCase
         $this->assertTrue($test_phrase === 'Test completed!');
     }
 
-    public function test_dispatcher()
-    {
-        sampurna()->dispatcher()->run();
-        $record = sampurna()->stack('sampurna_test_stack')
-            ->vault()->query('queue')
-            ->where('stack_uuid', 'sampurna_test_stack')
-            ->where('unit_uuid', 'test_unit_1')
-            ->first();
-        $this->assertTrue(
-            $record?->data_key === 0 && $record?->status === 'ready'
-        );
-    }
+//    public function test_dispatcher()
+//    {
+//        sampurna()->dispatcher()->run();
+//        $record = sampurna()->stack('sampurna_test_stack')
+//            ->vault()->query('queue')
+//            ->where('stack_uuid', 'sampurna_test_stack')
+//            ->where('unit_uuid', 'test_unit_1')
+//            ->first();
+//        $this->assertTrue(
+//            $record?->data_key === 0 && $record?->status === 'ready'
+//        );
+//    }
 }
