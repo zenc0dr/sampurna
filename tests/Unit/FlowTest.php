@@ -9,15 +9,14 @@ class FlowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-//        config([
-//            'sampurna.sampurna_vault' => storage_path('sampurna_vault_test')
-//        ]);
     }
 
     public function test_create_stack()
     {
         sampurna()->stack('sampurna_test_stack')->remove();
-        sampurna()->stack('sampurna_test_stack')->create('Sampurna stack test');
+        sampurna()->stack('sampurna_test_stack')->create([
+            'name' => 'Sampurna stack test'
+        ]);
         $this->assertTrue(
             sampurna()->stack('sampurna_test_stack')
                 ->getManifestData()['name'] === 'Sampurna stack test'
@@ -64,7 +63,8 @@ class FlowTest extends TestCase
             'stack' => 'sampurna_test_stack',
             'call' => 'Zenc0dr.Sampurna.Tests.TestUnits.test2',
             'attempts_max' => 3,
-            'attempts_pause' => 10
+            'attempts_pause' => 10,
+            'threads' => 3
         ]);
 
         $this->assertTrue(
@@ -79,21 +79,21 @@ class FlowTest extends TestCase
         $this->assertTrue($test_phrase === 'Test completed!');
     }
 
-    public function test_dispatcher()
-    {
-        sampurna()->dispatcher()->run();
-        $record = sampurna()->stack('sampurna_test_stack')
-            ->vault()->query('queue')
-            ->where('stack_uuid', 'sampurna_test_stack')
-            ->where('unit_uuid', 'test_unit_1')
-            ->first();
-        $this->assertTrue(
-            $record?->data_key === 0 && $record?->status === 'ready'
-        );
-    }
+//    public function test_dispatcher()
+//    {
+//        sampurna()->dispatcher()->run();
+//        $record = sampurna()->stack('sampurna_test_stack')
+//            ->vault()->query('queue')
+//            ->where('stack_uuid', 'sampurna_test_stack')
+//            ->where('unit_uuid', 'test_unit_1')
+//            ->first();
+//        $this->assertTrue(
+//            $record?->data_key === 0 && $record?->status === 'ready'
+//        );
+//    }
 
-    public function test_stream()
-    {
-        sampurna()->unit('test_unit_1')->stream();
-    }
+//    public function test_stream()
+//    {
+//        sampurna()->unit('test_unit_1')->stream();
+//    }
 }

@@ -8,6 +8,8 @@ class SampurnaDispatcher
 {
     use SingletonTrait;
 
+    private array $threads = [];
+
     public function run(): void
     {
         $units_dir = config('sampurna.sampurna_vault') . "/units";
@@ -18,9 +20,14 @@ class SampurnaDispatcher
             $unit_uuid = preg_replace('/\.json$/', '', $file['name']);
             $unit_data = sampurna()->unit($unit_uuid)->getManifestData();
             if (isset($unit_data['stack'])) {
-                if (isset($unit_data['mode']) && $unit_data['mode'] === 'dispatcher') {
-                    sampurna()->unit($unit_uuid)->dispatch();
+                if (isset($unit_data['mode'])) {
+                    if ($unit_data['mode'] === 'dispatcher') {
+                        sampurna()->unit($unit_uuid)->dispatch(); # Сразу поставить в очередь на выполнение
+                    }
                 }
+                $this->threads[$unit_uuid] = isset($unit_data['threads'])
+                    ? intval($unit_data['threads'])
+                    : 1;
                 $stacks[] = $unit_data['stack'];
             }
         }
@@ -31,31 +38,31 @@ class SampurnaDispatcher
             $stack_vault = sampurna()->stack($stack_uuid)->vault();
 
             # Запуск в потоке юнитов со статусом ready
-            //$this->unitReadyHandle($stack_vault);
+            $this->unitsHandler($stack_vault);
         }
     }
 
-    private function unitReadyHandle($stack_vault)
+    private function unitsHandler($stack_vault): void
     {
         $units_records = $stack_vault->query('queue')
-            ->where('status', 'ready')
-            ->orderByDesc('created_at')
+            ->whereNotIn('status', ['completed', 'error'])
+            ->orderBy('created_at')
+            ->orderByRaw("
+                CASE 
+                    WHEN status = 'ready' THEN 1
+                    WHEN status = 'await' THEN 2
+                    ELSE 3
+                END
+            ")
             ->get();
 
-       // $stacks = [];
-
         foreach ($units_records as $units_record) {
-            $unit = sampurna()->unit($units_record->name);
-            #$unit_data = $unit->getUnitData();
-            $batch_key = "$units_record->stack_uuid.$units_record->unit_uuid.$units_record->key";
-            $batch = sampurna()->batch($batch_key);
-            $unit->dispatch($batch, $batch_key);
-
-
-            //dd('???');
-
-            # Тут надо запустить и пометить
-            $unit->stream($units_record->name, $units_record->key);
+            if ($this->threads[$units_record->unit_uuid] < 1) {
+                continue;
+            }
+            $this->threads[$units_record->unit_uuid]--;
+            $unit = sampurna()->unit($units_record->unit_uuid);
+            $unit->stream($units_record->data_key);
         }
     }
 }

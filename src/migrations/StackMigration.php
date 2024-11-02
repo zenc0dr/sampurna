@@ -9,7 +9,7 @@ class StackMigration
     public function migrate(string $stack_uuid): void
     {
         $stack_vault_name = "$stack_uuid.queue";
-        sampurna()->vault($stack_vault_name)
+        sampurna()->vault($stack_vault_name) #TODO(zenc0rd): Вот тут надо передать адрес хранилища стека
             ->create(function ($schema) {
                 $schema->create('queue', function (Blueprint $table) {
                     $table->increments('id'); # Идентификатор юнита

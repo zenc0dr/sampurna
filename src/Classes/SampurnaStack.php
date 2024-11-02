@@ -20,19 +20,22 @@ class SampurnaStack
     }
 
     # Создание нового стека с установками по умолчанию
-    public function create(string $uuid = null): bool
+    public function create(?array $stack_data = null): bool
     {
         $helpers = sampurna()->helpers();
         $stack_manifest_path = $this->getManifestPath();
-        $new_stack = $helpers->fromJsonFile(__DIR__ . '/../resources/stacks/new_stack.json');
+        $new_stack = $stack_data ?? $helpers
+            ->fromJsonFile(
+                __DIR__ . '/../resources/stacks/new_stack.json'
+            );
 
-        if ($uuid) {
-            $new_stack['name'] = $uuid;
-        }
-        file_put_contents(
+        $helpers->toJsonFile(
             $stack_manifest_path,
-            $helpers->toJson($new_stack, true)
+            $new_stack,
+            true
         );
+
+        # Создаётся хранилище для очереди стека
         if (file_exists($stack_manifest_path)) {
             # Создать хранилище стэка
             sampurna()->migrate('StackMigration', $this->stack_uuid);

@@ -125,26 +125,17 @@ class SampurnaUnit
         }
 
         try {
-            $unit_data = $this->getManifestData($this->unit_uuid);
+            $unit_data = $this->getManifestData();
             $stack_uuid = $unit_data['stack'];
             $stack = sampurna()->stack($stack_uuid);
             $stack_vault = $stack->vault();
-            $stack_data = $stack->getManifestData();
-
-            # В случае если у стэка своё отдельное хранилище
-            if (isset($stack_data['vault'])) {
-                $vault_path = str_replace('base_path:', base_path(), $stack_data['vault']);
-                $vault_path = str_replace('storage_path:', storage_path(), $vault_path);
-                config([
-                    'sampurna.sampurna_vault' => $vault_path
-                ]);
-            }
 
             $queue_record = $stack_vault->query('queue')
                 ->where('stack_uuid', $stack_uuid)
                 ->where('unit_uuid', $this->unit_uuid)
                 ->where('data_key', $data_key)
                 ->first();
+
             $stack_vault->query('queue')
                 ->where('id', $queue_record->id)
                 ->update([
@@ -153,6 +144,7 @@ class SampurnaUnit
                     'start_at' => now(),
                     'status' => 'process'
                 ]);
+
             $batch = sampurna()->batch("$stack_uuid.$this->unit_uuid.$data_key");
             $call_string = $unit_data['call'];
             $call_string = explode('.', $call_string);
@@ -173,7 +165,10 @@ class SampurnaUnit
             # Вызов юнита
             $unit_output = app($call_string)->{$method}($batch);
         } catch (Exception | Throwable $exception) {
-            $error = $exception->getMessage();
+            $message = $exception->getMessage();
+            $file = $exception->getFile();
+            $line = $exception->getLine();
+            $error = "$message ($file:$line)";
         }
 
         # Если была ошибка
@@ -188,6 +183,7 @@ class SampurnaUnit
                     ->update([
                         'pid' => null,
                         'status' => 'error',
+                        'attempts' => $queue_record->attempts,
                         'errors' => $this->errorsMutator($queue_record, $error),
                         'after_at' => null
                     ]);
@@ -224,6 +220,9 @@ class SampurnaUnit
             'time' => now()->format('Y-m-d H:i:s'),
             'error' => $error,
         ];
+        sampurna()->services()->log(
+            "Задача: $record->unit_uuid:$record->data_key завершилась с ошибкой $error"
+        , 'error');
         return sampurna()->helpers()->toJson($errors);
     }
 
