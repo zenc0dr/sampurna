@@ -13,7 +13,6 @@ class SampurnaDaemon
             self::savePid();
             $i++;
             sampurna()->dispatcher()->run();
-            sampurna()->services()->log("Демон поработал $i раз");
             sleep(2);
         }
     }
