@@ -11,9 +11,11 @@ class SampurnaUnitCommand extends Command
     protected $signature = 'sampurna:unit {action} {--uuid=} {--name=} {--unit_data=}';
     protected $description = 'Sampurna units control';
 
-    public function handle()
+    public function handle(): void
     {
-        sampurna()->services()->sessionStorageSet('sampurna.log.echo', true);
+        sampurna()->services()
+            ->sessionStorageSet('sampurna.log.echo', true);
+
         $action = $this->argument('action');
         $uuid = $this->option('uuid');
 

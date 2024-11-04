@@ -10,7 +10,7 @@ class SampurnaDispatcherCommand extends Command
 {
     protected $signature = 'sampurna:run';
     protected $description = 'Run sampurna, run...';
-    public function handle()
+    public function handle(): void
     {
         sampurna()->services()->artisanBackgroundExec('sampurna:daemon');
     }

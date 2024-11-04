@@ -10,7 +10,7 @@ class SampurnaStackCommand extends Command
     protected $signature = 'sampurna:stack {action} {--uuid=} {--stack_data=}';
     protected $description = 'Sampurna stacks control';
 
-    public function handle()
+    public function handle(): void
     {
         sampurna()->services()->sessionStorageSet('sampurna.log.echo', true);
         $action = $this->argument('action');
