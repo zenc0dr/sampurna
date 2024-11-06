@@ -1,0 +1,12 @@
+@import "~bootstrap/dist/css/bootstrap.css";
+@import "~bootstrap-icons/font/bootstrap-icons.css";
+@import "~primevue/resources/themes/saga-blue/theme.css";
+@import "~primevue/resources/primevue.min.css";
+@import "~primeicons/primeicons.css";
+
+$font-family: 'Roboto', sans-serif;
+
+body {
+    background: #777;
+    font-family: $font-family;
+}

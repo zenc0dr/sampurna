@@ -1,19 +1,17 @@
 const mix = require('laravel-mix')
 const webpack = require('webpack')
 
-mix.setPublicPath('../../public/kriti')
-mix.setResourceRoot('/kriti/');
-mix.sass('resources/scss/kriti.scss', 'css')
-mix.js('resources/js/kriti.js', 'js').vue()
-
-mix.copyDirectory('resources/images', '../../public/kriti/images')
+mix.setPublicPath('src/public')
+mix.setResourceRoot('/sampurna/');
+mix.sass('src/resources/scss/sampurna.scss', 'css')
+mix.js('src/resources/js/sampurna.js', 'js').vue()
 
 if (mix.inProduction()) {
     mix.webpackConfig({
         output: {
             filename: '[name].js',
             chunkFilename: 'js/[name].app.js',
-            publicPath: '/kriti/'
+            publicPath: '/sampurna/'
         }
     })
     mix.version();
@@ -22,7 +20,7 @@ if (mix.inProduction()) {
         output: {
             filename: '[name].js',
             chunkFilename: 'js/[name].app.js',
-            publicPath: '/kriti/'
+            publicPath: '/sampurna/'
         },
         devtool: 'inline-source-map',
         plugins:[

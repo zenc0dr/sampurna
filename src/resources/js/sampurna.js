@@ -12,14 +12,14 @@ import router from './routes';
 
 import '@cyhnkckali/vue3-color-picker/dist/style.css';
 
-import KritiApp from "../vue/KritiApp";
+import SampurnaApp from "../vue/SampurnaApp.vue";
 import vueClickOutsideElement from 'vue-click-outside-element'
 
-window.Kriti = {
+window.Sampurna = {
     requests_register: {}, // Объект фиксации запросов
     events: [], // Массив событий
 
-    Workspace: null,
+    Ui: null,
     link: [], // Хранение точек, для механизма сцепок
 
     global: {
@@ -33,16 +33,14 @@ window.Kriti = {
     },
 
     checkAuth() {
-        this.auth_token = localStorage.getItem('kriti-token')
+        this.auth_token = localStorage.getItem('sampurna-token')
     },
-
-
 
 
     /* Загрузка начальных данных */
     loadBootstrapData() {
         this.api({
-            url: 'kriti.api.Workspace:bootstrap',
+            url: 'sampurna.api.Ui:bootstrap',
             then: response => {
                 // Параметры по умолчанию
             }
@@ -50,7 +48,7 @@ window.Kriti = {
     },
 
     preloader(state) {
-        this.eventExecOnce('kriti.preloader')
+        this.eventExecOnce('sampurna.preloader')
     },
 
     api(opts) {
@@ -81,7 +79,7 @@ window.Kriti = {
             config = config || {}
             config.withCredentials = true
             config.headers = config.headers || {}
-            config.headers.KritiAuth = this.auth_token
+            config.headers.SampurnaAuth = this.auth_token
         }
 
         /* Запрос */
@@ -126,7 +124,7 @@ window.Kriti = {
         }
     },
 
-    /**** begin: Kriti Event Bus ****/
+    /**** begin: Sampurna Event Bus ****/
 
     // Добавить событие
     eventPush(event_code, fn) {
@@ -163,7 +161,7 @@ window.Kriti = {
             this.events.splice(eventIndex, 1)
         }
     }, // Выполнить событие единожды
-    /**** end: Kriti Event Bus ****/
+    /**** end: Sampurna Event Bus ****/
 
     /* Создать сцепку */
     makeLink(link_code) {
@@ -174,11 +172,11 @@ window.Kriti = {
             let link = this.link.map((item) => {
                 return this.unescapeSelector(item)
             })
-            this.Workspace.makeLink(link, () => {
+            this.Ui.makeLink(link, () => {
                 this.cleanLink()
-                this.Workspace.getScheme(()=> {
-                    this.Workspace.removeAllLinks()
-                    this.Workspace.addLinks()
+                this.Ui.getScheme(()=> {
+                    this.Ui.removeAllLinks()
+                    this.Ui.addLinks()
                 })
             })
         }
@@ -201,15 +199,15 @@ window.Kriti = {
     }
 }
 
-Kriti.bootstrap()
+Sampurna.bootstrap()
 
 import FormFitter from "../vue/components/interface/Dwarf/forms/FormFitter";
 import FormSection from "../vue/components/interface/Dwarf/forms/FormSection";
 
-const app = createApp(KritiApp)
+const app = createApp(SampurnaApp)
 app.use(router)
 app.use(PrimeVue, {ripple: true})
 app.use(vueClickOutsideElement)
 app.component('FormFitter', FormFitter)
 app.component('FormSection', FormSection)
-app.mount("#kriti-app")
+app.mount("#sampurna-app")
